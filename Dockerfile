@@ -1,71 +1,29 @@
 FROM php:7-alpine
 MAINTAINER Johannes Tegnér <johannes@jitesoft.com>
 
-#########################################################
-## Disclaimer:
-## Currently this docker file is just a copy of the 
-## composer/composer (maintained by Rob Loach) docker 
-## file, but with php:7-alpine as base instead of 7.0
-## which means that any of the latest 7.x branch 
-## php alpine packages will be downloaded instead of
-## the 7.0.x branch.
-#########################################################
-
-# Packages
-RUN apk --update add \
-    autoconf \
-    build-base \
-    curl \
-    git \
-    subversion \
-    freetype-dev \
-    libjpeg-turbo-dev \
-    libmcrypt-dev \
-    libpng-dev \
-    libbz2 \
-    libstdc++ \
-    libxslt-dev \
-    openldap-dev \
-    make \
-    unzip \
-    wget && \
-    docker-php-ext-install bcmath mcrypt zip bz2 mbstring pcntl xsl && \
+RUN apk add --update \
+    git subversion autoconf file g++ curl gcc binutils isl libatomic libc-dev musl-dev make re2c libstdc++ libgcc binutils-libs mpc1 mpfr3 gmp libgomp \
+    coreutils freetype-dev libjpeg-turbo-dev libltdl libmcrypt-dev libpng-dev && \
+    docker-php-ext-install iconv mcrypt mysqli pdo pdo_mysql zip && \
     docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ && \
     docker-php-ext-install gd && \
-    docker-php-ext-configure ldap --with-libdir=lib/ && \
-    docker-php-ext-install ldap && \
-    apk del build-base && \
+    apk del autoconf file g++ gcc binutils isl libatomic libc-dev musl-dev make re2c libstdc++ libgcc binutils-libs mpc1 mpfr3 gmp libgomp && \
     rm -rf /var/cache/apk/*
 
-# PEAR tmp fix
-RUN echo "@testing http://dl-4.alpinelinux.org/alpine/edge/testing/" >> /etc/apk/repositories && \
-    apk add --update php7-pear@testing && \
-    rm -rf /var/cache/apk/*
-
-# Memory Limit
 RUN echo "memory_limit=-1" > $PHP_INI_DIR/conf.d/memory-limit.ini
-
-# Time Zone
 RUN echo "date.timezone=${PHP_TIMEZONE:-UTC}" > $PHP_INI_DIR/conf.d/date_timezone.ini
+RUN mkdir /composer
 
-# Register the COMPOSER_HOME environment variable
 ENV COMPOSER_HOME /composer
-
-# Add global binary directory to PATH and make sure to re-export it
 ENV PATH /composer/vendor/bin:$PATH
-
-# Allow Composer to be run as root
 ENV COMPOSER_ALLOW_SUPERUSER 1
 
-# Setup the Composer installer
-RUN curl -o /tmp/composer-setup.php https://getcomposer.org/installer \
-  && curl -o /tmp/composer-setup.sig https://composer.github.io/installer.sig \
-  && php -r "if (hash('SHA384', file_get_contents('/tmp/composer-setup.php')) !== trim(file_get_contents('/tmp/composer-setup.sig'))) { unlink('/tmp/composer-setup.php'); echo 'Invalid installer' . PHP_EOL; exit(1); }"
+RUN php -r "copy('https://getcomposer.org/installer', '/tmp/setup.php'); if (hash('SHA384', file_get_contents('/tmp/setup.php')) !== trim(file_get_contents('https://composer.github.io/installer.sig'))) { echo 'Signature did not match.' . PHP_EOL; exit(1); }" && \
+    php /tmp/setup.php --install-dir=/composer \
+    rm -rf /tmp/setup.php 
 
-# Set up the volumes and working directory
 VOLUME ["/app"]
 WORKDIR /app
 
-# Set up the command arguments
 CMD ["-"]
-ENTRYPOINT ["composer", "--ansi"]
+ENTRYPOINT ["php", "/composer/composer.phar", "--ansi"]
