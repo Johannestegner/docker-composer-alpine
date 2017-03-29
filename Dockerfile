@@ -1,9 +1,12 @@
 FROM jite/php-fpm:latest
 MAINTAINER Johannes Tegnér <johannes@jitesoft.com>
 
-ENV COMPOSER_ALLOW_SUPERUSER 1
+ENV COMPOSER_ALLOW_SUPERUSER
+ENV COMPOSER_HOME /composer
+ENV PATH /composer/vendor/bin:$PATH
 
-RUN apk add --update git subversion curl && \
+RUN mkdir /composer && \
+    apk add --update git subversion curl && \
     rm -rf /var/cache/apk/* && \
     echo "memory_limit=-1" > $PHP_INI_DIR/conf.d/memory-limit.ini && \
     echo "date.timezone=${PHP_TIMEZONE:-UTC}" > $PHP_INI_DIR/conf.d/date_timezone.ini && \
