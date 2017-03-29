@@ -1,7 +1,7 @@
 FROM jite/php-fpm:latest
 MAINTAINER Johannes Tegnér <johannes@jitesoft.com>
 
-ENV COMPOSER_ALLOW_SUPERUSER
+ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV COMPOSER_HOME /composer
 ENV PATH /composer/vendor/bin:$PATH
 
