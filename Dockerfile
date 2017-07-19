@@ -1,4 +1,4 @@
-FROM jite/php-fpm:latest
+FROM jitesoft/php-fpm:latest
 MAINTAINER Johannes Tegnér <johannes@jitesoft.com>
 
 ENV COMPOSER_ALLOW_SUPERUSER 1
