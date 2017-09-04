@@ -16,5 +16,5 @@ RUN mkdir /composer && \
 VOLUME ["/app"]
 WORKDIR /app
 
-CMD ["-"]
-ENTRYPOINT ["composer", "--ansi"]
+ENTRYPOINT ["docker-php-entrypoint"]
+CMD ["php", "-a"]
