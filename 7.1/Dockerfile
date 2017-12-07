@@ -1,4 +1,4 @@
-FROM jitesoft/php-fpm:latest
+FROM jitesoft/php-fpm:7.1
 LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>"
 
 ENV COMPOSER_ALLOW_SUPERUSER="1" \
