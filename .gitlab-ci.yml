@@ -18,7 +18,7 @@ php 7.2:
     VERSION: "7.2"
     DOCKER_FILE: "${VERSION}/Dockerfile"
   script:
-    - BUILD=$(docker build -q -f ${DOCKER_FILE} .)
+    - BUILD=$(docker build --no-cache -q -f ${DOCKER_FILE} .)
     - PHP_V=$(docker inspect -f '{{range $index, $value := .Config.Env}}{{if eq (index (split $value "=") 0) "PHP_VERSION" }}{{range $i, $part := (split $value "=")}}{{if gt $i 1}}{{print "="}}{{end}}{{if gt $i 0}}{{print $part}}{{end}}{{end}}{{end}}{{end}}' ${BUILD})
     - echo "Building for php v ${PHP_V}. The image build hash is ${BUILD}"
     - TAGS="${PHP_SVERSIONHORT} 7 stable latest"
@@ -32,7 +32,7 @@ php 7.1:
     VERSION: "7.1"
     DOCKER_FILE: "${VERSION}/Dockerfile"
   script:
-    - BUILD=$(docker build -q -f ${DOCKER_FILE} .)
+    - BUILD=$(docker build --no-cache -q -f ${DOCKER_FILE} .)
     - PHP_V=$(docker inspect -f '{{range $index, $value := .Config.Env}}{{if eq (index (split $value "=") 0) "PHP_VERSION" }}{{range $i, $part := (split $value "=")}}{{if gt $i 1}}{{print "="}}{{end}}{{if gt $i 0}}{{print $part}}{{end}}{{end}}{{end}}{{end}}' ${BUILD})
     - echo "Building for php v ${PHP_V}. The image build hash is ${BUILD}"
     - TAGS="${VERSION}"
@@ -46,7 +46,7 @@ php 7.0:
     VERSION: "7.0"
     DOCKER_FILE: "${VERSION}/Dockerfile"
   script:
-    - BUILD=$(docker build -q -f ${DOCKER_FILE} .)
+    - BUILD=$(docker build --no-cache -q -f ${DOCKER_FILE} .)
     - PHP_V=$(docker inspect -f '{{range $index, $value := .Config.Env}}{{if eq (index (split $value "=") 0) "PHP_VERSION" }}{{range $i, $part := (split $value "=")}}{{if gt $i 1}}{{print "="}}{{end}}{{if gt $i 0}}{{print $part}}{{end}}{{end}}{{end}}{{end}}' ${BUILD})
     - echo "Building for php v ${PHP_V}. The image build hash is ${BUILD}"
     - TAGS="${VERSION}"
@@ -60,7 +60,7 @@ php 5.6:
     VERSION: "5.6"
     DOCKER_FILE: "${VERSION}/Dockerfile"
   script:
-    - BUILD=$(docker build -q -f ${DOCKER_FILE} .)
+    - BUILD=$(docker build --no-cache -q -f ${DOCKER_FILE} .)
     - PHP_V=$(docker inspect -f '{{range $index, $value := .Config.Env}}{{if eq (index (split $value "=") 0) "PHP_VERSION" }}{{range $i, $part := (split $value "=")}}{{if gt $i 1}}{{print "="}}{{end}}{{if gt $i 0}}{{print $part}}{{end}}{{end}}{{end}}{{end}}' ${BUILD})
     - echo "Building for php v ${PHP_V}. The image build hash is ${BUILD}."
     - TAGS="${VERSION} 5"
