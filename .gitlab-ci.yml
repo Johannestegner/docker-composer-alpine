@@ -4,7 +4,6 @@ variables:
   IMG_NAME: "jitesoft/composer"
 
 after_script:
-  - 
   - docker logout
 
 php 7.2:
