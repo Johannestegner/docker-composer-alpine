@@ -4,12 +4,15 @@ variables:
   IMG_NAME: "jitesoft/composer"
 
 after_script:
+  - docker run --rm ${IMG_NAME}:${VERSION} composer -V
+  - docker run --rm ${IMG_NAME}:${VERSION} php -v
   - docker logout
 
 php 7.2:
   stage: deploy
   variables:
-    DOCKER_FILE: "7.2/Dockerfile"
+    VERSION: 7.2
+    DOCKER_FILE: "${VERSION}/Dockerfile"
   before_script:
     - docker login -u $HUB_USER -p $HUB_PW
     - docker pull jitesoft/php-fpm:7.2
@@ -26,7 +29,8 @@ php 7.2:
 php 7.1:
   stage: deploy
   variables:
-    DOCKER_FILE: "7.1/Dockerfile"
+    VERSION: 7.1
+    DOCKER_FILE: "${VERSION}/Dockerfile"
   before_script:
     - docker login -u $HUB_USER -p $HUB_PW
     - docker pull jitesoft/php-fpm:7.1
@@ -42,8 +46,9 @@ php 7.1:
 
 php 7.0:
   stage: deploy
-  variables:
-    DOCKER_FILE: "7.0/Dockerfile"
+  variables:    
+    VERSION: 7.0
+    DOCKER_FILE: "${VERSION}/Dockerfile"
   before_script:
     - docker login -u $HUB_USER -p $HUB_PW
     - docker pull jitesoft/php-fpm:7.0
@@ -62,16 +67,16 @@ php 7.0:
 php 5.6:
   stage: deploy
   variables:
-    DOCKER_FILE: "5.6/Dockerfile"
+    VERSION: 5.6
+    DOCKER_FILE: "${VERSION}/Dockerfile"
   before_script:
     - docker login -u $HUB_USER -p $HUB_PW
-    - docker pull jitesoft/php-fpm:5.6
   script:
+    - docker pull jitesoft/php-fpm:${VERSION}
     - BUILD=$(docker build -q -f ${DOCKER_FILE} .)
     - PHP_V=$(docker inspect -f '{{range $index, $value := .Config.Env}}{{if eq (index (split $value "=") 0) "PHP_VERSION" }}{{range $i, $part := (split $value "=")}}{{if gt $i 1}}{{print "="}}{{end}}{{if gt $i 0}}{{print $part}}{{end}}{{end}}{{end}}{{end}}' ${BUILD})
-    - PHP_SHORT="${PHP_V:0:3}"
-    - echo "Building for php v ${PHP_V}. The image build hash is ${BUILD}"
-    - TAGS="${PHP_SHORT} 5"
+    - echo "Building for php v ${PHP_V}. The image build hash is ${BUILD}."
+    - TAGS="${VERSION} 5"
     - for tag in $TAGS; do docker tag $BUILD ${IMG_NAME}:${tag}; docker push ${IMG_NAME}:${tag}; done
   only:
     - master
