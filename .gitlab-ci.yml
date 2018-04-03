@@ -4,13 +4,12 @@ variables:
   IMG_NAME: "jitesoft/composer"
 
 before_script:
-  - docker login -u $HUB_USER -p $HUB_PW
+  - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PASSWORD
   - docker pull jitesoft/php-fpm:${VERSION}
 
 after_script:
   - docker run --rm ${IMG_NAME}:${VERSION} composer -V
   - docker run --rm ${IMG_NAME}:${VERSION} php -v
-  - docker logout
 
 php 7.2:
   stage: deploy
