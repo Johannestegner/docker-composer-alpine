@@ -9,7 +9,7 @@ variables:
     - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PASSWORD
     - docker pull jitesoft/php-fpm:${VERSION}
   script: 
-    - BUILD=$(docker build --no-cache -q -f ${DOCKER_FILE} .)
+    - BUILD=$(docker build --build-arg VERSION=${VERSION} --no-cache -q -f .)
     - for tag in $TAGS; do docker tag $BUILD jitesoft/composer:${tag}; docker push jitesoft/composer:${tag}; done
   after_script:
     - docker run --rm jitesoft/composer:${VERSION} composer -V
@@ -19,26 +19,22 @@ Build:php:7.2:
   variables:
     VERSION: "7.2"
     TAGS: "${VERSION} 7 stable latest"
-    DOCKER_FILE: "${VERSION}/Dockerfile"
   <<: *build
   
 Build:php:7.1:
   variables:
     TAGS: "7.1"
     VERSION: "7.1"
-    DOCKER_FILE: "${VERSION}/Dockerfile"
   <<: *build
 
 Build:php:7.0:
   variables:
     VERSION: "7.0"
     TAGS: "${VERSION}"
-    DOCKER_FILE: "${VERSION}/Dockerfile"
   <<: *build
 
 Build:php:5.6:
   variables:
     VERSION: "5.6"
     TAGS: "${VERSION} 5"
-    DOCKER_FILE: "${VERSION}/Dockerfile"
   <<: *build
