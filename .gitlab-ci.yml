@@ -3,7 +3,7 @@ stages:
   - notify
 
 .build: &build
-image: docker:latest
+  image: docker:latest
   stage: deploy
   before_script:
     - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PASSWORD
