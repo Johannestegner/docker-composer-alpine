@@ -15,6 +15,12 @@ stages:
     - docker run --rm jitesoft/composer:${VERSION} composer -V
     - docker run --rm jitesoft/composer:${VERSION} php -v
 
+build:php:7.3:
+  <<: *build
+  variables:
+    VERSION: "7.3-rc"
+    EXTRA_TAGS: "rc next ${VERSION}"
+
 Build:php:7.2:
   variables:
     VERSION: "7.2"
