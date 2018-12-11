@@ -29,8 +29,8 @@ Build:php:7.2:
   
 Build:php:7.1:
   variables:
-    TAGS: "7.1"
-    VERSION: "${VERSION}"
+    VERSION: "7.1"
+    TAGS: "${VERSION}"
   <<: *build
 
 Build:php:7.0:
