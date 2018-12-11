@@ -6,8 +6,8 @@ PHP & Composer running alpine linux.
 
 Tags represents the php version of the image.
 
-* `7.3-rc`, `rc`, `unstable`, `next`
-* `7.2`, `7`, `stable`, `latest`
+* `7.3`, `7`, `stable`, `latest`
+* `7.2`
 * `7.1`
 * `7.0`
 * `5.6`, `5`

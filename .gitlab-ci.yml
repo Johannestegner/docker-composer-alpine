@@ -18,19 +18,19 @@ stages:
 build:php:7.3:
   <<: *build
   variables:
-    VERSION: "7.3-rc"
-    TAGS: "rc next ${VERSION}"
+    VERSION: "7.3"
+    TAGS: "stable latest 7 ${VERSION}"
 
 Build:php:7.2:
   variables:
     VERSION: "7.2"
-    TAGS: "${VERSION} 7 stable latest"
+    TAGS: "${VERSION}"
   <<: *build
   
 Build:php:7.1:
   variables:
     TAGS: "7.1"
-    VERSION: "7.1"
+    VERSION: "${VERSION}"
   <<: *build
 
 Build:php:7.0:
