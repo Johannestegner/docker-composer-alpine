@@ -5,6 +5,8 @@ stages:
 .build: &build
   image: docker:latest
   stage: deploy
+  services:
+    - docker:dind
   before_script:
     - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PASSWORD
     - docker pull jitesoft/php-fpm:${VERSION}
