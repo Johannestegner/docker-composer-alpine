@@ -8,11 +8,11 @@ stages:
   services:
     - docker:dind
   before_script:
-    - docker login -u $DOCKER_HUB_USER -p $DOCKER_HUB_PASSWORD
+    - echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_USER} --password-stdin
     - docker pull jitesoft/php-fpm:${VERSION}
-  script: 
-    - BUILD=$(docker build --build-arg VERSION=${VERSION} --no-cache -q .)
-    - for tag in $TAGS; do docker tag $BUILD jitesoft/composer:${tag}; docker push jitesoft/composer:${tag}; done
+  script:
+    - docker build --build-arg VERSION=${VERSION} -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} --no-cache -q .
+    - for tag in $TAGS; do docker tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} jitesoft/composer:${tag}; docker push jitesoft/composer:${tag}; done
   after_script:
     - docker run --rm jitesoft/composer:${VERSION} composer -V
     - docker run --rm jitesoft/composer:${VERSION} php -v
@@ -28,7 +28,7 @@ Build:php:7.2:
     VERSION: "7.2"
     TAGS: "${VERSION}"
   <<: *build
-  
+
 Build:php:7.1:
   variables:
     VERSION: "7.1"
