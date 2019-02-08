@@ -11,7 +11,7 @@ stages:
     - echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_USER} --password-stdin
     - docker pull jitesoft/php-fpm:${VERSION}
   script:
-    - docker build --build-arg VERSION=${VERSION} -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} --no-cache -q .
+    - docker build --build-arg VERSION=${VERSION} -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} --no-cache .
     - for tag in $TAGS; do docker tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} jitesoft/composer:${tag}; docker push jitesoft/composer:${tag}; done
   after_script:
     - docker run --rm jitesoft/composer:${VERSION} composer -V
