@@ -80,7 +80,7 @@ build:php:7.2:fpm:
   <<: *build
   variables:
     VERSION: "7.2"
-    TAGS: "stable latest 7 ${VERSION}"
+    TAGS: "${VERSION}"
     BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/fpm"
     IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm"
     HUB_IMAGE_NAME: "jitesoft/composer"
