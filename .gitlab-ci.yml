@@ -34,7 +34,7 @@ download:
     - echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_USER} --password-stdin
     - echo ${CI_JOB_TOKEN} | docker login -u gitlab-ci-token registry.gitlab.com --password-stdin
   script:
-    - docker build --build-arg BASE_IMAGE="${BASE_IMAGE}:${VERSION}"-t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} .
+    - docker build --build-arg BASE_IMAGE="${BASE_IMAGE}:${VERSION}" -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} .
     - |
       for tag in $TAGS; do
         docker tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} ${IMAGE_NAME}:${tag}
