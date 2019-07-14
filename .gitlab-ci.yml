@@ -1,56 +1,122 @@
 stages:
+  - download
   - deploy
+  - scan
   - notify
 
+download:
+  image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
+  before_script:
+    - apk add --no-cache grep coreutils
+  script:
+    - mkdir downloads
+    - cd downloads
+    - curl -LOsS https://composer.github.io/installer.sha384sum
+    - curl -L -o composer-setup.php https://getcomposer.org/installer
+    - sha384sum --check installer.sha384sum
+  artifacts:
+    expire_in: 2 days
+    paths:
+      - downloads/
+
 .build: &build
-  image: docker:latest
+  image: registry.gitlab.com/jitesoft/dockerfiles/docker:18.09.6
   stage: deploy
+  dependencies:
+    - download
   services:
-    - docker:dind
+    - registry.gitlab.com/jitesoft/dockerfiles/docker/dind:18.09.6
   before_script:
     - echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_USER} --password-stdin
-    - docker pull jitesoft/php-fpm:${VERSION}
+    - echo ${CI_JOB_TOKEN} | docker login -u gitlab-ci-token registry.gitlab.com --password-stdin
   script:
-    - docker build --build-arg VERSION=${VERSION} -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} --no-cache --network host .
-    - for tag in $TAGS; do docker tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} jitesoft/composer:${tag}; docker push jitesoft/composer:${tag}; done
-  after_script:
-    - docker run --rm jitesoft/composer:${VERSION} composer -V
-    - docker run --rm jitesoft/composer:${VERSION} php -v
+    - docker build --build-arg VERSION=${VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} .
+    - |
+      for tag in $TAGS; do
+        docker tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} ${IMAGE_NAME}:${tag}
+        # docker tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} ${HUB_IMAGE_NAME}:${tag}${TAG_SUFFIX}
+        # docker push ${HUB_IMAGE_NAME}:${tag}${TAG_SUFFIX}
+        docker push ${IMAGE_NAME}:${tag}
+      done
+
+# Cli and Fpm share the build script but use different variables.
+
+.build:cli: &build-cli
+  <<: *build
+  variables:
+    BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/cli"
+    IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli"
+    HUB_IMAGE_NAME: "jitesoft/composer"
+    TAG_SUFFIX: "-cli"
+
+.build:fpm: &build-fpm
+  <<: *build
+  variables:
+    BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/fpm"
+    IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm"
+    HUB_IMAGE_NAME: "jitesoft/composer"
+    TAG_SUFFIX: ""
+
+# Each step got its own tags and versions.
 
 build:php:7.3:
-  <<: *build
+  <<: *build-cli
   variables:
     VERSION: "7.3"
     TAGS: "stable latest 7 ${VERSION}"
 
 Build:php:7.2:
+  <<: *build-cli
   variables:
     VERSION: "7.2"
     TAGS: "${VERSION}"
-  <<: *build
 
-Build:php:7.1:
+
+build:php:7.3:fpm:
+  <<: *build-fpm
   variables:
-    VERSION: "7.1"
-    TAGS: "${VERSION}"
-  <<: *build
+    VERSION: "7.3"
+    TAGS: "stable latest 7 ${VERSION}"
 
-Build:php:7.0:
+build:php:7.2:fpm:
+  <<: *build-fpm
   variables:
-    VERSION: "7.0"
-    TAGS: "${VERSION}"
-  <<: *build
+    VERSION: "7.2"
+    TAGS: "stable latest 7 ${VERSION}"
 
-Build:php:5.6:
-  variables:
-    VERSION: "5.6"
-    TAGS: "${VERSION} 5"
-  <<: *build
-
-trigger_build:
-  image: alpine:latest
+# Trigger next pipeline (phpunit).
+# TODO: Disabled until tested.
+.trigger_build:
+  image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   stage: notify
   before_script:
     - apk add --no-cache curl
   script:
     - "curl -X POST -F token=${NOTIFY_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4113741/trigger/pipeline"
+
+# Container scanning!
+
+scan:7.3:fpm:
+  stage: scan
+  extends: .container_scanning
+  variables:
+    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/fpm:7.3
+
+scan:7.2:fpm:
+  stage: scan
+  extends: .container_scanning
+  variables:
+    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/fpm:7.2
+
+scan:7.3:cli:
+  stage: scan
+  extends: .container_scanning
+  variables:
+    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/cli:7.3
+
+scan:7.2:cli:
+  stage: scan
+  extends: .container_scanning
+  variables:
+    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/cli:7.2
+
