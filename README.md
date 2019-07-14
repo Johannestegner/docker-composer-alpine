@@ -4,6 +4,8 @@ PHP and Composer running on alpine linux.
 
 ## Tags
 
+### Docker hub
+
 Tags represents the php version of the image.  
 The default tags include `php-fpm` while the `cli` tags is just plain php cli.
 
@@ -18,6 +20,15 @@ No longer maintained:
 * `7.0`
 * `5.6`, `5`
 
+### GitLab
+
+* `registry.gitlab.com/jitesoft/dockerfiles/composer-alpine/fpm`
+  * `7.3`, `7`, `stable`, `latest`
+  * `7.2`
+* `registry.gitlab.com/jitesoft/dockerfiles/composer-alpine/cli`
+  * `7.3`, `7`, `stable`, `latest`
+  * `7.2`
+  
 ## Dockerfile
 
 [GitHub](https://github.com/Johannestegner/docker-composer-alpine/blob/master/Dockerfile)

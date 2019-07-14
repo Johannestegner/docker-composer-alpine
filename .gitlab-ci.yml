@@ -33,18 +33,17 @@ download:
   before_script:
     - echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_USER} --password-stdin
     - echo ${CI_JOB_TOKEN} | docker login -u gitlab-ci-token registry.gitlab.com --password-stdin
+    - apk add --no-cache grep
   script:
-    - docker build --build-arg BASE_IMAGE="${BASE_IMAGE}:${VERSION}" -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} .
+    - C_VERSION=$(wget -qO- https://getcomposer.org | grep -oP "(?<=Latest:\ v)(([0-9]{0,3}(\.?)){3})" | awk 'NR==1{print $1}')
+    - docker build --build-arg BASE_IMAGE="${BASE_IMAGE}:${VERSION}" --label "com.jitesoft.app.composer.version=${C_VERSION}" -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} .
     - |
       for tag in $TAGS; do
         docker tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} ${IMAGE_NAME}:${tag}
-        # docker tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} ${HUB_IMAGE_NAME}:${tag}${TAG_SUFFIX}
-        # docker push ${HUB_IMAGE_NAME}:${tag}${TAG_SUFFIX}
+        docker tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} ${HUB_IMAGE_NAME}:${tag}${TAG_SUFFIX}
+        docker push ${HUB_IMAGE_NAME}:${tag}${TAG_SUFFIX}
         docker push ${IMAGE_NAME}:${tag}
       done
-
-# Cli and Fpm share the build script but use different variables.
-# Each step got its own tags and versions.
 
 build:php:7.3:
   <<: *build
@@ -88,8 +87,7 @@ build:php:7.2:fpm:
     TAG_SUFFIX: ""
 
 # Trigger next pipeline (phpunit).
-# TODO: Disabled until tested.
-.trigger_build:
+trigger_build:
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   stage: notify
   before_script:
@@ -98,7 +96,6 @@ build:php:7.2:fpm:
     - "curl -X POST -F token=${NOTIFY_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4113741/trigger/pipeline"
 
 # Container scanning!
-
 scan:7.3:fpm:
   stage: scan
   extends: .container_scanning
