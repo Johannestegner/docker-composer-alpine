@@ -11,7 +11,7 @@ download:
   stage: download
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   before_script:
-    - apk add --no-cache grep coreutils
+    - apk add --no-cache grep coreutils curl
   script:
     - mkdir downloads
     - cd downloads
