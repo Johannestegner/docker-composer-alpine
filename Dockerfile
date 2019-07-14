@@ -18,7 +18,7 @@ COPY ./downloads/composer-setup.php /composer-setup.php
 RUN echo "memory_limit=-1" > $PHP_INI_DIR/conf.d/memory-limit.ini \
  && echo "date.timezone=${PHP_TIMEZONE:-UTC}" > $PHP_INI_DIR/conf.d/date_timezone.ini \
  && php /composer-setup.php --install-dir=/usr/local/bin --filename=composer \
- && rm composer-setup.php \
+ && rm /composer-setup.php \
  && composer -V \
  && php --version
 
