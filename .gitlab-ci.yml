@@ -11,7 +11,7 @@ download:
   stage: download
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   before_script:
-    - apk add --no-cache grep coreutils curl
+    - apk add --no-cache coreutils curl
   script:
     - mkdir downloads
     - cd downloads
@@ -34,7 +34,7 @@ download:
     - echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_USER} --password-stdin
     - echo ${CI_JOB_TOKEN} | docker login -u gitlab-ci-token registry.gitlab.com --password-stdin
   script:
-    - docker build --build-arg VERSION=${VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} .
+    - docker build --build-arg BASE_IMAGE="${BASE_IMAGE}:${VERSION}"-t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} .
     - |
       for tag in $TAGS; do
         docker tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} ${IMAGE_NAME}:${tag}
@@ -44,49 +44,48 @@ download:
       done
 
 # Cli and Fpm share the build script but use different variables.
+# Each step got its own tags and versions.
 
-.build:cli: &build-cli
+build:php:7.3:
   <<: *build
   variables:
+    VERSION: "7.3"
+    TAGS: "stable latest 7 ${VERSION}"
     BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/cli"
     IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli"
     HUB_IMAGE_NAME: "jitesoft/composer"
     TAG_SUFFIX: "-cli"
 
-.build:fpm: &build-fpm
+Build:php:7.2:
   <<: *build
   variables:
+    VERSION: "7.2"
+    TAGS: "${VERSION}"
+    BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/cli"
+    IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli"
+    HUB_IMAGE_NAME: "jitesoft/composer"
+    TAG_SUFFIX: "-cli"
+
+
+build:php:7.3:fpm:
+  <<: *build
+  variables:
+    VERSION: "7.3"
+    TAGS: "stable latest 7 ${VERSION}"
     BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/fpm"
     IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm"
     HUB_IMAGE_NAME: "jitesoft/composer"
     TAG_SUFFIX: ""
 
-# Each step got its own tags and versions.
-
-build:php:7.3:
-  <<: *build-cli
-  variables:
-    VERSION: "7.3"
-    TAGS: "stable latest 7 ${VERSION}"
-
-Build:php:7.2:
-  <<: *build-cli
-  variables:
-    VERSION: "7.2"
-    TAGS: "${VERSION}"
-
-
-build:php:7.3:fpm:
-  <<: *build-fpm
-  variables:
-    VERSION: "7.3"
-    TAGS: "stable latest 7 ${VERSION}"
-
 build:php:7.2:fpm:
-  <<: *build-fpm
+  <<: *build
   variables:
     VERSION: "7.2"
     TAGS: "stable latest 7 ${VERSION}"
+    BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/fpm"
+    IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm"
+    HUB_IMAGE_NAME: "jitesoft/composer"
+    TAG_SUFFIX: ""
 
 # Trigger next pipeline (phpunit).
 # TODO: Disabled until tested.

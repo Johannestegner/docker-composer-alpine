@@ -1,6 +1,5 @@
 ARG BASE_IMAGE
-ARG VERSION
-FROM ${BASE_IMAGE}:${VERSION}
+FROM ${BASE_IMAGE}
 LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
       maintainer.org="Jitesoft" \
       maintainer.org.uri="https://jitesoft.com" \
