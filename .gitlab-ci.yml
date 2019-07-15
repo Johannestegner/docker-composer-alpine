@@ -36,7 +36,8 @@ download:
     - apk add --no-cache grep
   script:
     - C_VERSION=$(wget -qO- https://getcomposer.org | grep -oP "(?<=Latest:\ v)(([0-9]{0,3}(\.?)){3})" | awk 'NR==1{print $1}')
-    - docker build --build-arg BASE_IMAGE="${BASE_IMAGE}" --build-arg PHP_VERSION="${VERSION}" --label "com.jitesoft.app.composer.version=${C_VERSION}" -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} .
+    - echo "Building for ${VERSION} using tags ${TAGS}."
+    - docker build --build-arg BASE_IMAGE="${BASE_IMAGE}" --build-arg PHP_VERSION="${VERSION}" --label "com.jitesoft.app.composer.version=${C_VERSION}" -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} --no-cache .
     - |
       for tag in $TAGS; do
         docker tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} ${IMAGE_NAME}:${tag}
@@ -49,7 +50,7 @@ build:php:7.3:
   <<: *build
   variables:
     VERSION: "7.3"
-    TAGS: "stable latest 7 ${VERSION}"
+    TAGS: "stable latest 7 7.3"
     BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/cli"
     IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli"
     HUB_IMAGE_NAME: "jitesoft/composer"
@@ -59,7 +60,7 @@ Build:php:7.2:
   <<: *build
   variables:
     VERSION: "7.2"
-    TAGS: "${VERSION}"
+    TAGS: "7.2"
     BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/cli"
     IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli"
     HUB_IMAGE_NAME: "jitesoft/composer"
@@ -70,7 +71,7 @@ build:php:7.3:fpm:
   <<: *build
   variables:
     VERSION: "7.3"
-    TAGS: "stable latest 7 ${VERSION}"
+    TAGS: "stable latest 7 7.3"
     BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/fpm"
     IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm"
     HUB_IMAGE_NAME: "jitesoft/composer"
@@ -80,7 +81,7 @@ build:php:7.2:fpm:
   <<: *build
   variables:
     VERSION: "7.2"
-    TAGS: "${VERSION}"
+    TAGS: "7.2"
     BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/fpm"
     IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm"
     HUB_IMAGE_NAME: "jitesoft/composer"
