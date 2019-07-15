@@ -1,5 +1,6 @@
 ARG BASE_IMAGE
-FROM ${BASE_IMAGE}
+ARG PHP_VERSION
+FROM ${BASE_IMAGE}:${PHP_VERSION}
 LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
       maintainer.org="Jitesoft" \
       maintainer.org.uri="https://jitesoft.com" \
