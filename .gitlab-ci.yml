@@ -36,12 +36,11 @@ download:
     - apk add --no-cache grep
   script:
     - C_VERSION=$(wget -qO- https://getcomposer.org | grep -oP "(?<=Latest:\ v)(([0-9]{0,3}(\.?)){3})" | awk 'NR==1{print $1}')
-    - echo "Building for ${VERSION} using tags ${TAGS}."
-    - docker build --build-arg BASE_IMAGE="${BASE_IMAGE}" --build-arg PHP_VERSION="${VERSION}" --label "com.jitesoft.app.composer.version=${C_VERSION}" -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} --no-cache .
+    - docker build --build-arg BASE_IMAGE="${BASE_IMAGE}" --build-arg PHP_VERSION="${VERSION}" --label "com.jitesoft.app.composer.version=${C_VERSION}" -t ${IMAGE_NAME}:${VERSION}-tmp --no-cache .
     - |
       for tag in $TAGS; do
-        docker tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} ${IMAGE_NAME}:${tag}
-        docker tag ${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHA} ${HUB_IMAGE_NAME}:${tag}${TAG_SUFFIX}
+        docker tag ${IMAGE_NAME}:${VERSION}-tmp ${IMAGE_NAME}:${tag}
+        docker tag ${IMAGE_NAME}:${VERSION}-tmp ${HUB_IMAGE_NAME}:${tag}${TAG_SUFFIX}
         docker push ${HUB_IMAGE_NAME}:${tag}${TAG_SUFFIX}
         docker push ${IMAGE_NAME}:${tag}
       done
