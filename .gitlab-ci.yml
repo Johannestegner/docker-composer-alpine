@@ -10,6 +10,8 @@ stages:
 download:
   stage: download
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
+  variables:
+    GIT_STRATEGY: none
   before_script:
     - apk add --no-cache coreutils curl
   script:
@@ -24,15 +26,11 @@ download:
       - downloads/
 
 .build: &build
-  image: registry.gitlab.com/jitesoft/dockerfiles/docker:18.09.6
+  image: registry.gitlab.com/jitesoft/dockerfiles/docker:latest
   stage: deploy
   dependencies:
     - download
-  services:
-    - registry.gitlab.com/jitesoft/dockerfiles/docker/dind:18.09.6
   before_script:
-    - echo ${DOCKER_HUB_PASSWORD} | docker login -u ${DOCKER_HUB_USER} --password-stdin
-    - echo ${CI_JOB_TOKEN} | docker login -u gitlab-ci-token registry.gitlab.com --password-stdin
     - apk add --no-cache grep
   script:
     - C_VERSION=$(wget -qO- https://getcomposer.org | grep -oP "(?<=Latest:\ v)(([0-9]{0,3}(\.?)){3})" | awk 'NR==1{print $1}')
@@ -40,9 +38,11 @@ download:
     - |
       for tag in $TAGS; do
         docker tag ${IMAGE_NAME}:${VERSION}-tmp ${IMAGE_NAME}:${tag}
-        docker tag ${IMAGE_NAME}:${VERSION}-tmp ${HUB_IMAGE_NAME}:${tag}${TAG_SUFFIX}
-        docker push ${HUB_IMAGE_NAME}:${tag}${TAG_SUFFIX}
+        docker tag ${IMAGE_NAME}:${VERSION}-tmp jitesoft/composer:${tag}${TAG_SUFFIX}
+        docker tag ${IMAGE_NAME}:${VERSION}-tmp quay.io/jitesoft/composer:${tag}${QUAY_TAG_SUFFIX}
+        docker push jitesoft/composer:${tag}${TAG_SUFFIX}
         docker push ${IMAGE_NAME}:${tag}
+        docker push quay.io/jitesoft/composer:${tag}${QUAY_TAG_SUFFIX}
       done
 
 build:php:7.3:
@@ -52,8 +52,8 @@ build:php:7.3:
     TAGS: "stable latest 7 7.3"
     BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/cli"
     IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli"
-    HUB_IMAGE_NAME: "jitesoft/composer"
     TAG_SUFFIX: "-cli"
+    QUAY_TAG_SUFFIX: ""
 
 Build:php:7.2:
   <<: *build
@@ -62,8 +62,8 @@ Build:php:7.2:
     TAGS: "7.2"
     BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/cli"
     IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli"
-    HUB_IMAGE_NAME: "jitesoft/composer"
     TAG_SUFFIX: "-cli"
+    QUAY_TAG_SUFFIX: ""
 
 
 build:php:7.3:fpm:
@@ -73,8 +73,8 @@ build:php:7.3:fpm:
     TAGS: "stable latest 7 7.3"
     BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/fpm"
     IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm"
-    HUB_IMAGE_NAME: "jitesoft/composer"
     TAG_SUFFIX: ""
+    QUAY_TAG_SUFFIX: "-fpm"
 
 build:php:7.2:fpm:
   <<: *build
@@ -83,8 +83,45 @@ build:php:7.2:fpm:
     TAGS: "7.2"
     BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/fpm"
     IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm"
-    HUB_IMAGE_NAME: "jitesoft/composer"
     TAG_SUFFIX: ""
+    QUAY_TAG_SUFFIX: "-fpm"
+
+# Container scanning!
+scan:7.3:fpm:
+  needs:
+    - build:php:7.3:fpm
+  stage: scan
+  extends: .container_scanning
+  variables:
+    GIT_STRATEGY: none
+    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/fpm:7.3
+
+scan:7.2:fpm:
+  needs:
+    - build:php:7.2:fpm
+  stage: scan
+  extends: .container_scanning
+  variables:
+    GIT_STRATEGY: none
+    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/fpm:7.2
+
+scan:7.3:cli:
+  needs:
+    - build:php:7.3:cli
+  stage: scan
+  extends: .container_scanning
+  variables:
+    GIT_STRATEGY: none
+    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/cli:7.3
+
+scan:7.2:cli:
+  needs:
+    - build:php:7.2:cli
+  stage: scan
+  extends: .container_scanning
+  variables:
+    GIT_STRATEGY: none
+    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/cli:7.2
 
 # Trigger next pipeline (phpunit).
 trigger_build:
@@ -94,29 +131,3 @@ trigger_build:
     - apk add --no-cache curl
   script:
     - "curl -X POST -F token=${NOTIFY_TOKEN} -F ref=master https://gitlab.com/api/v4/projects/4113741/trigger/pipeline"
-
-# Container scanning!
-scan:7.3:fpm:
-  stage: scan
-  extends: .container_scanning
-  variables:
-    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/fpm:7.3
-
-scan:7.2:fpm:
-  stage: scan
-  extends: .container_scanning
-  variables:
-    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/fpm:7.2
-
-scan:7.3:cli:
-  stage: scan
-  extends: .container_scanning
-  variables:
-    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/cli:7.3
-
-scan:7.2:cli:
-  stage: scan
-  extends: .container_scanning
-  variables:
-    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/cli:7.2
-
