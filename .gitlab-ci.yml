@@ -55,7 +55,7 @@ build:php:7.3:
     TAG_SUFFIX: "-cli"
     QUAY_TAG_SUFFIX: ""
 
-Build:php:7.2:
+build:php:7.2:
   <<: *build
   variables:
     VERSION: "7.2"
@@ -107,7 +107,7 @@ scan:7.2:fpm:
 
 scan:7.3:cli:
   needs:
-    - build:php:7.3:cli
+    - build:php:7.3
   stage: scan
   extends: .container_scanning
   variables:
@@ -116,7 +116,7 @@ scan:7.3:cli:
 
 scan:7.2:cli:
   needs:
-    - build:php:7.2:cli
+    - build:php:7.2
   stage: scan
   extends: .container_scanning
   variables:
