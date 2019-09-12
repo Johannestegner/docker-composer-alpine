@@ -1,5 +1,5 @@
 include:
-  - https://gitlab.com/jitesoft/gitlab-ci-lib/raw/master/container_scan.yml
+  - https://gitlab.com/jitesoft/gitlab-ci-lib/raw/master/container_scan-v2.yml
 
 stages:
   - download
@@ -90,7 +90,6 @@ build:php:7.2:fpm:
 scan:7.3:fpm:
   needs:
     - build:php:7.3:fpm
-  stage: scan
   extends: .container_scanning
   variables:
     GIT_STRATEGY: none
@@ -99,7 +98,6 @@ scan:7.3:fpm:
 scan:7.2:fpm:
   needs:
     - build:php:7.2:fpm
-  stage: scan
   extends: .container_scanning
   variables:
     GIT_STRATEGY: none
@@ -108,7 +106,6 @@ scan:7.2:fpm:
 scan:7.3:cli:
   needs:
     - build:php:7.3
-  stage: scan
   extends: .container_scanning
   variables:
     GIT_STRATEGY: none
@@ -117,7 +114,6 @@ scan:7.3:cli:
 scan:7.2:cli:
   needs:
     - build:php:7.2
-  stage: scan
   extends: .container_scanning
   variables:
     GIT_STRATEGY: none
