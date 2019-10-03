@@ -1,13 +1,16 @@
 ARG BASE_IMAGE
 ARG PHP_VERSION
+ARG COMPOSER_VERSION
 FROM ${BASE_IMAGE}:${PHP_VERSION}
+ARG COMPOSER_VERSION
 LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
       maintainer.org="Jitesoft" \
       maintainer.org.uri="https://jitesoft.com" \
       com.jitesoft.project.repo.type="git" \
       com.jitesoft.project.repo.uri="https://gitlab.com/jitesoft/dockerfiles/composer-alpine" \
       com.jitesoft.project.repo.issues="https://gitlab.com/jitesoft/dockerfiles/composer-alpine/issues" \
-      com.jitesoft.project.registry.uri="registry.gitlab.com/jitesoft/dockerfiles/composer-alpine"
+      com.jitesoft.project.registry.uri="registry.gitlab.com/jitesoft/dockerfiles/composer-alpine" \
+      com.jitesoft.app.composer.version="${COMPOSER_VERSION}"
 
 ENV COMPOSER_ALLOW_SUPERUSER="1" \
     COMPOSER_HOME="/composer" \

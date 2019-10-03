@@ -7,6 +7,9 @@ stages:
   - scan
   - notify
 
+variables:
+  PLATFORMS: "linux/amd64,linux/arm64"
+
 download:
   stage: download
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
@@ -26,7 +29,7 @@ download:
       - downloads/
 
 .build: &build
-  image: registry.gitlab.com/jitesoft/dockerfiles/docker:latest
+  image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   stage: deploy
   dependencies:
     - download
@@ -34,47 +37,38 @@ download:
     - apk add --no-cache grep
   script:
     - C_VERSION=$(wget -qO- https://getcomposer.org | grep -oP "(?<=<strong>)([0-9]{0,3}(\.?)){3}" | awk 'NR==1{print $1}')
-    - docker build --build-arg BASE_IMAGE="${BASE_IMAGE}" --build-arg PHP_VERSION="${VERSION}" --label "com.jitesoft.app.composer.version=${C_VERSION}" -t ${IMAGE_NAME}:${VERSION}-tmp --no-cache .
-    - |
-      for tag in $TAGS; do
-        docker tag ${IMAGE_NAME}:${VERSION}-tmp ${IMAGE_NAME}:${tag}
-        docker tag ${IMAGE_NAME}:${VERSION}-tmp jitesoft/composer:${tag}${TAG_SUFFIX}
-        docker tag ${IMAGE_NAME}:${VERSION}-tmp quay.io/jitesoft/composer:${tag}${QUAY_TAG_SUFFIX}
-        docker push jitesoft/composer:${tag}${TAG_SUFFIX}
-        docker push ${IMAGE_NAME}:${tag}
-        docker push quay.io/jitesoft/composer:${tag}${QUAY_TAG_SUFFIX}
-      done
+    - TAG_LIST=$(helper "${IMAGE_NAME}" "${TAGS}")
+    - HUB_LIST=$(helper "jitesoft/composer" "${HUB_TAGS}")
+    - docker build buildx --platform ${PLATFORMS} --progress plain --push ${TAG_LIST} ${HUB_LIST} --build-arg PHP_VERSION=${VERSION} --build-arg COMPOSER_VERSION=${C_VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} .
+  tags: [ jitesoft, buildx, arm64, amd64 ]
 
 build:php:7.3:
   <<: *build
   variables:
     VERSION: "7.3"
-    TAGS: "stable latest 7 7.3"
+    TAGS: "stable,latest,7,7.3"
     BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/cli"
     IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli"
-    TAG_SUFFIX: "-cli"
-    QUAY_TAG_SUFFIX: ""
+    HUB_TAGS: "stable-cli,latest-cli,7-cli,7.3-cli"
 
 build:php:7.2:
   <<: *build
   variables:
     VERSION: "7.2"
-    TAGS: "7.2"
-    BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/cli"
     IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli"
-    TAG_SUFFIX: "-cli"
-    QUAY_TAG_SUFFIX: ""
+    TAGS: "7.2"
+    HUB_TAGS: "7.2-cli"
+    BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/cli"
 
 
 build:php:7.3:fpm:
   <<: *build
   variables:
     VERSION: "7.3"
-    TAGS: "stable latest 7 7.3"
+    TAGS: "stable,latest,7 7.3"
     BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/fpm"
     IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm"
-    TAG_SUFFIX: ""
-    QUAY_TAG_SUFFIX: "-fpm"
+    HUB_TAGS: "stable,latest,7 7.3"
 
 build:php:7.2:fpm:
   <<: *build
@@ -83,8 +77,7 @@ build:php:7.2:fpm:
     TAGS: "7.2"
     BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/fpm"
     IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm"
-    TAG_SUFFIX: ""
-    QUAY_TAG_SUFFIX: "-fpm"
+    HUB_TAGS: "7.2"
 
 # Container scanning!
 scan:7.3:fpm:
