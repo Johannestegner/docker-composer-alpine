@@ -1,6 +1,6 @@
 # Composer - Alpine
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/jitesoft/composer.svg)](https://cloud.docker.com/u/jitesoft/repository/docker/jitesoft/composer)
+[![Docker Pulls](https://img.shields.io/docker/pulls/jitesoft/composer.svg)](https://hub.docker.com/r/jitesoft/composer)
 [![Back project](https://img.shields.io/badge/Open%20Collective-Tip%20the%20devs!-blue.svg)](https://opencollective.com/jitesoft-open-source)
 [![pipeline status](https://gitlab.com/jitesoft/dockerfiles/composer-alpine/badges/master/pipeline.svg)](https://gitlab.com/jitesoft/dockerfiles/composer-alpine/commits/master)
 
@@ -19,10 +19,11 @@ will stop push. That is, the non-suffixed tags will contain the CLI version of t
 Tags represents the php version of the image.  
 The default tags include `php-fpm` while the `cli` tags is just plain php cli.
 
-* `7.3`, `7`, `stable`, `latest`
-* `7.2`
-* `7.3-cli`, `7-cli`, `stable-cli`, `latest-cli`
-* `7.2-cli`
+* `jitesoft/composer`
+  * `7.3`, `7`, `stable`, `latest`
+  * `7.2`
+  * `7.3-cli`, `7-cli`, `stable-cli`, `latest-cli`
+  * `7.2-cli`
 
 ### GitLab
 
