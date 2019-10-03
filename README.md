@@ -2,8 +2,15 @@
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/jitesoft/composer.svg)](https://cloud.docker.com/u/jitesoft/repository/docker/jitesoft/composer)
 [![Back project](https://img.shields.io/badge/Open%20Collective-Tip%20the%20devs!-blue.svg)](https://opencollective.com/jitesoft-open-source)
+[![pipeline status](https://gitlab.com/jitesoft/dockerfiles/composer-alpine/badges/master/pipeline.svg)](https://gitlab.com/jitesoft/dockerfiles/composer-alpine/commits/master)
 
 PHP and Composer running on alpine linux.
+
+### Deprecation notice:
+
+_After 2020-01-01 this image will no longer contain the `fpm` version, but rather only the `cli` version. Until then, the 
+current image names will be kept as is, after 2020-01-01 all new pushes will contain the CLI version only and fpm versions
+will stop push. That is, the non-suffixed tags will contain the CLI version of the image._
 
 ## Tags
 
@@ -16,12 +23,6 @@ The default tags include `php-fpm` while the `cli` tags is just plain php cli.
 * `7.2`
 * `7.3-cli`, `7-cli`, `stable-cli`, `latest-cli`
 * `7.2-cli`
-
-No longer maintained:
-
-* `7.1`
-* `7.0`
-* `5.6`, `5`
 
 ### GitLab
 
