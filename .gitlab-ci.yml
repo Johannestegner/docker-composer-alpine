@@ -38,7 +38,7 @@ download:
     - TAG_LIST=$(helper "${IMAGE_NAME}" "${TAGS}")
     - HUB_LIST=$(helper "jitesoft/composer" "${HUB_TAGS}")
     - docker buildx build --platform ${PLATFORMS} --progress plain --push ${TAG_LIST} ${HUB_LIST} --build-arg PHP_VERSION=${VERSION} --build-arg COMPOSER_VERSION=${C_VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} .
-  tags: [ jitesoft, buildx, arm64, amd64 ]
+  tags: [ jitesoft, buildx, protected ]
 
 build:php:7.3:
   <<: *build
