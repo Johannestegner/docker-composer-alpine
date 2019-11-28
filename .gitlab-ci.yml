@@ -40,44 +40,52 @@ download:
     - docker buildx build --platform ${PLATFORMS} --progress plain --push ${TAG_LIST} ${HUB_LIST} --build-arg PHP_VERSION=${VERSION} --build-arg COMPOSER_VERSION=${C_VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} .
   tags: [ jitesoft, buildx, protected ]
 
+build:php:7.4:
+  <<: *build
+  variables:
+    VERSION: "7.4"
+    TAGS: "stable,latest,7,7.4"
+    BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/cli"
+    IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli"
+    HUB_TAGS: "stable-cli,latest-cli,7-cli,7.4-cli"
+
 build:php:7.3:
   <<: *build
   variables:
     VERSION: "7.3"
-    TAGS: "stable,latest,7,7.3"
-    BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/cli"
     IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli"
-    HUB_TAGS: "stable-cli,latest-cli,7-cli,7.3-cli"
+    TAGS: "7.3"
+    HUB_TAGS: "7.3-cli"
+    BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/cli"
 
-build:php:7.2:
+
+build:php:7.4:fpm:
   <<: *build
   variables:
-    VERSION: "7.2"
-    IMAGE_NAME: "${CI_REGISTRY_IMAGE}/cli"
-    TAGS: "7.2"
-    HUB_TAGS: "7.2-cli"
-    BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/cli"
-
+    VERSION: "7.4"
+    TAGS: "stable,latest,7 7.4"
+    BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/fpm"
+    IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm"
+    HUB_TAGS: "stable,latest,7 7.4"
 
 build:php:7.3:fpm:
   <<: *build
   variables:
     VERSION: "7.3"
-    TAGS: "stable,latest,7 7.3"
+    TAGS: "7.3"
     BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/fpm"
     IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm"
-    HUB_TAGS: "stable,latest,7 7.3"
-
-build:php:7.2:fpm:
-  <<: *build
-  variables:
-    VERSION: "7.2"
-    TAGS: "7.2"
-    BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/fpm"
-    IMAGE_NAME: "${CI_REGISTRY_IMAGE}/fpm"
-    HUB_TAGS: "7.2"
+    HUB_TAGS: "7.3"
 
 # Container scanning!
+scan:7.4:fpm:
+  needs:
+    - build:php:7.4:fpm
+  extends: .container_scanning
+  variables:
+    GIT_STRATEGY: none
+    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/fpm:7.4
+
 scan:7.3:fpm:
   needs:
     - build:php:7.3:fpm
@@ -86,13 +94,13 @@ scan:7.3:fpm:
     GIT_STRATEGY: none
     SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/fpm:7.3
 
-scan:7.2:fpm:
+scan:7.4:cli:
   needs:
-    - build:php:7.2:fpm
+    - build:php:7.4
   extends: .container_scanning
   variables:
     GIT_STRATEGY: none
-    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/fpm:7.2
+    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/cli:7.4
 
 scan:7.3:cli:
   needs:
@@ -101,14 +109,6 @@ scan:7.3:cli:
   variables:
     GIT_STRATEGY: none
     SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/cli:7.3
-
-scan:7.2:cli:
-  needs:
-    - build:php:7.2
-  extends: .container_scanning
-  variables:
-    GIT_STRATEGY: none
-    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}/cli:7.2
 
 # Trigger next pipeline (phpunit).
 trigger_build:
