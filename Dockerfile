@@ -1,7 +1,5 @@
-ARG BASE_IMAGE
 ARG PHP_VERSION
-ARG COMPOSER_VERSION
-FROM ${BASE_IMAGE}:${PHP_VERSION}
+FROM registry.gitlab.com/jitesoft/dockerfiles/php/cli:${PHP_VERSION}
 ARG COMPOSER_VERSION
 LABEL maintainer="Johannes Tegnér <johannes@jitesoft.com>" \
       maintainer.org="Jitesoft" \

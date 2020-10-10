@@ -7,9 +7,6 @@ stages:
   - scan
   - notify
 
-variables:
-  PLATFORMS: "linux/amd64,linux/arm64"
-
 download:
   stage: download
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
@@ -36,7 +33,7 @@ download:
   script:
     - C_VERSION=$(wget -qO- https://getcomposer.org | grep -oP "(?<=<strong>)([0-9]{0,3}(\.?)){3}" | awk 'NR==1{print $1}')
     - TAG_LIST=$(helper "jitesoft/composer,${CI_REGISTRY_IMAGE}" "${TAGS}")
-    - docker buildx build --platform ${PLATFORMS} --progress plain --push ${TAG_LIST} ${HUB_LIST} --build-arg PHP_VERSION=${VERSION} --build-arg COMPOSER_VERSION=${C_VERSION} --build-arg BASE_IMAGE=${BASE_IMAGE} .
+    - docker buildx build --platform linux/amd64,linux/arm64 --progress plain --push ${TAG_LIST} ${HUB_LIST} --build-arg PHP_VERSION=${VERSION} --build-arg COMPOSER_VERSION=${C_VERSION} .
   tags: [ jitesoft, buildx, protected ]
 
 build:php:7.4:
@@ -44,14 +41,18 @@ build:php:7.4:
   variables:
     VERSION: "7.4"
     TAGS: "stable,latest,7,7.4"
-    BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/cli"
+
+build:php:8.0:
+  <<: *build
+  variables:
+    VERSION: "8.0"
+    TAGS: "unstable,rc,8,8.0"
 
 build:php:7.3:
   <<: *build
   variables:
     VERSION: "7.3"
     TAGS: "7.3"
-    BASE_IMAGE: "registry.gitlab.com/jitesoft/dockerfiles/php/cli"
 
 scan:7.4:
   needs:
