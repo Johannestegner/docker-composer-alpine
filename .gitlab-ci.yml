@@ -25,52 +25,34 @@ download:
     paths:
       - downloads/
 
-.build: &build
+build: &build
+  parallel:
+    matrix:
+      - { VERSION: "7.3", TAGS: "7.3" }
+      - { VERSION: "7.4", TAGS: "latest,stable,7,7.4" }
+      - { VERSION: "8.0", TAGS: "unstable,rc,8,8.0" }
   image: registry.gitlab.com/jitesoft/dockerfiles/misc:latest
   stage: deploy
-  dependencies:
-    - download
+  needs:
+    - job: download
+      artifacts: true
   script:
     - C_VERSION=$(wget -qO- https://getcomposer.org | grep -oP "(?<=<strong>)([0-9]{0,3}(\.?)){3}" | awk 'NR==1{print $1}')
     - TAG_LIST=$(helper "ghcr.io/jitesoft/composer,jitesoft/composer,${CI_REGISTRY_IMAGE}" "${TAGS}")
     - docker buildx build --platform linux/amd64,linux/arm64 --progress plain --push ${TAG_LIST} ${HUB_LIST} --build-arg PHP_VERSION=${VERSION} --build-arg COMPOSER_VERSION=${C_VERSION} .
   tags: [ jitesoft, buildx, protected ]
 
-build:php:7.4:
-  <<: *build
-  variables:
-    VERSION: "7.4"
-    TAGS: "stable,latest,7,7.4"
-
-build:php:8.0:
-  <<: *build
-  variables:
-    VERSION: "8.0"
-    TAGS: "unstable,rc,8,8.0"
-
-build:php:7.3:
-  <<: *build
-  variables:
-    VERSION: "7.3"
-    TAGS: "7.3"
-
-scan:7.4:
-  needs:
-    - build:php:7.4
+scan:
   extends: .container_scanning
-  variables:
-    GIT_STRATEGY: none
-    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}:7.4
-
-scan:7.3:
   needs:
-    - build:php:7.3
-  extends: .container_scanning
-  variables:
-    GIT_STRATEGY: none
-    SCANNING_IMAGE_NAME: ${CI_REGISTRY_IMAGE}:7.3
+    - job: build
+      artifacts: false
+  parallel:
+    matrix:
+      - { IMAGE: "${CI_REGISTRY_IMAGE}:7.3", GIT_STRATEGY: "none" }
+      - { IMAGE: "${CI_REGISTRY_IMAGE}:7.4", GIT_STRATEGY: "none" }
+      - { IMAGE: "${CI_REGISTRY_IMAGE}:8.0", GIT_STRATEGY: "none" }
 
-# Trigger next pipeline (phpunit).
 trigger_build:
   image: registry.gitlab.com/jitesoft/dockerfiles/alpine:latest
   stage: notify
