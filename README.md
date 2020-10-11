@@ -13,14 +13,23 @@ All images are built for amd64 and arm64.
 ### Docker hub
 
 * `jitesoft/composer`
-  * `7.4`, `7`, `stable`, `latest`
-  * `7.3`
+    * `8.0`, `rc`, `unstable`
+    * `7.4`, `7`, `stable`, `latest`
+    * `7.3`
 
 ### GitLab
 
 * `registry.gitlab.com/jitesoft/dockerfiles/composer-alpine`
-  * `7.4`, `7`, `stable`, `latest`
-  * `7.3`
+    * `8.0`, `rc`, `unstable`
+    * `7.4`, `7`, `stable`, `latest`
+    * `7.3`
+
+### GitHub
+
+* `ghcr.io/jitesoft/composer`
+    * `8.0`, `rc`, `unstable`
+    * `7.4`, `7`, `stable`, `latest`
+    * `7.3`
 
 _Note:  
 Earlier versions of this image was built using php-fpm, since 2020-01-01 the image changed to use the CLI image as default._
