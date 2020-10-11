@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:experimental
 ARG PHP_VERSION
 FROM registry.gitlab.com/jitesoft/dockerfiles/php/cli:${PHP_VERSION}
 ARG COMPOSER_VERSION
@@ -15,13 +16,14 @@ ENV COMPOSER_ALLOW_SUPERUSER="1" \
     PATH="/composer/vendor/bin:$PATH" \
     COMPOSER_NO_INTERACTION="1"
 
-COPY ./downloads/composer-setup.php /composer-setup.php
+ARG COMPOSER_VERSION
 
-RUN echo "memory_limit=-1" > $PHP_INI_DIR/conf.d/memory-limit.ini \
+RUN --mount=type=bind,source=./downloads,target=/tmp/bin \
+    echo "memory_limit=-1" > $PHP_INI_DIR/conf.d/memory-limit.ini \
  && echo "date.timezone=${PHP_TIMEZONE:-UTC}" > $PHP_INI_DIR/conf.d/date_timezone.ini \
- && php /composer-setup.php --install-dir=/usr/local/bin --filename=composer \
- && rm /composer-setup.php \
+ && php /tmp/bin/composer-setup.php --install-dir=/usr/local/bin --filename=composer \
  && composer -V \
  && php --version
 
 ENTRYPOINT ["entrypoint"]
+CMD ["composer"]
