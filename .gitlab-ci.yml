@@ -32,7 +32,7 @@ download:
     - download
   script:
     - C_VERSION=$(wget -qO- https://getcomposer.org | grep -oP "(?<=<strong>)([0-9]{0,3}(\.?)){3}" | awk 'NR==1{print $1}')
-    - TAG_LIST=$(helper "jitesoft/composer,${CI_REGISTRY_IMAGE}" "${TAGS}")
+    - TAG_LIST=$(helper "ghcr.io/jitesoft/composer,jitesoft/composer,${CI_REGISTRY_IMAGE}" "${TAGS}")
     - docker buildx build --platform linux/amd64,linux/arm64 --progress plain --push ${TAG_LIST} ${HUB_LIST} --build-arg PHP_VERSION=${VERSION} --build-arg COMPOSER_VERSION=${C_VERSION} .
   tags: [ jitesoft, buildx, protected ]
 
